@@ -1,34 +1,36 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { uploadAudio } from "@/utils/actions/chapters";
 import useKeyPressed from "@/utils/hooks/useKey";
+import useSupabase from "@/utils/hooks/useSupabase";
+import useUser from "@/utils/hooks/useUser";
 import { cn } from "@/utils/ui-utils";
 import { addMinutes, addSeconds, format } from "date-fns";
 import { MicIcon, VoicemailIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { AudioRecorder, useAudioRecorder } from "react-audio-voice-recorder";
+import { useMutation, useQueryClient } from "react-query";
 
-type Props = {};
+type Props = {
+  ownerId: string;
+  chapterId: string;
+};
 
-const RecordButton = (props: Props) => {
-  // function getLocalStream() {
-  //   navigator.mediaDevices
-  //     .getUserMedia({ video: false, audio: true })
-  //     .then((stream) => {
-  //       // @ts-ignore
-  //       window.localStream = stream; // A
-  //       // @ts-ignore
-  //       window.localAudio.srcObject = stream; // B
-  //       // @ts-ignore
-  //       window.localAudio.autoplay = true; // C
-  //     })
-  //     .catch((err) => {
-  //       console.error(`you got an error: ${err}`);
-  //     });
-  //   console.log(navigator.mediaDevices);
-  // }
-  // useEffect(() => {
-  //   getLocalStream();
-  // }, []);
+const RecordButton = ({ chapterId, ownerId }: Props) => {
+  const supabase = useSupabase();
+  const queryClient = useQueryClient();
+  const { user } = useUser();
+
+  const uploadAudioMutation = useMutation({
+    mutationFn: ({ fileBlob }: { fileBlob: Blob }) =>
+      uploadAudio(supabase, chapterId, fileBlob),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [chapterId, "audio"] });
+    },
+  });
+
+  const { toast } = useToast();
 
   const {
     startRecording,
@@ -39,13 +41,18 @@ const RecordButton = (props: Props) => {
     isPaused,
     recordingTime,
     mediaRecorder,
-  } = useAudioRecorder();
+  } = useAudioRecorder({}, (exp) => {
+    toast({ title: "Unable to record audio", description: exp.message });
+  });
 
   function formattedTime(seconds: number) {
     let dt = new Date(seconds * 1000);
     dt = addMinutes(dt, dt.getTimezoneOffset());
     return format(dt, "mm:ss");
   }
+
+  if (!user || user.id !== ownerId) return null;
+
   return (
     <div className="fixed right-10 bottom-10">
       <Button
@@ -60,6 +67,15 @@ const RecordButton = (props: Props) => {
         <MicIcon size={24} />
         {isRecording && `Listening... ${formattedTime(recordingTime)}`}
       </Button>
+      {recordingBlob && (
+        <Button
+          onClick={() =>
+            uploadAudioMutation.mutate({ fileBlob: recordingBlob })
+          }
+        >
+          Save
+        </Button>
+      )}
     </div>
   );
 };

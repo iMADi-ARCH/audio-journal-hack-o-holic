@@ -1,3 +1,4 @@
+import { RecordButton } from "@/components/specific/audio-recorder";
 import {
   getChapterDetails,
   getChapterThumbnail,
@@ -7,14 +8,15 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import React from "react";
+import AudioList from "./AudioList";
 
-type Props = {};
+type Props = { params?: { ownerId?: string; chapterId?: string } };
 
-const AddChapter = async ({ params }: { params: { id?: string } }) => {
+const ChapterPage = async ({ params }: Props) => {
   const supabase = createClient();
-  if (!params.id) notFound();
-  const thumbnail = await getChapterThumbnail(supabase, params.id);
-  const chapter = await getChapterDetails(supabase, params.id);
+  if (!params || !params.chapterId || !params.ownerId) return notFound();
+  const thumbnail = await getChapterThumbnail(supabase, params.chapterId);
+  const chapter = await getChapterDetails(supabase, params.chapterId);
 
   return (
     <div className="">
@@ -33,18 +35,10 @@ const AddChapter = async ({ params }: { params: { id?: string } }) => {
         </p>
       </div>
 
-      <div className="flex flex-col">
-        {format(new Date(), "hh:mm:ss")}{" "}
-        <audio className="mb-5" src="" controls></audio>
-        {format(new Date(), "hh:mm:ss")}{" "}
-        <audio className="mb-5" src="" controls></audio>
-        {format(new Date(), "hh:mm:ss")}{" "}
-        <audio className="mb-5" src="" controls></audio>
-        {format(new Date(), "hh:mm:ss")}{" "}
-        <audio className="mb-5" src="" controls></audio>
-      </div>
+      <AudioList ownerId={params.ownerId} chapterId={params.chapterId} />
+      <RecordButton ownerId={params.ownerId} chapterId={params.chapterId} />
     </div>
   );
 };
 
-export default AddChapter;
+export default ChapterPage;

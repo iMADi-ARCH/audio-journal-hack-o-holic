@@ -22,7 +22,7 @@ const Chapter = async ({ chapter }: Props) => {
   const supabase = createClient();
   const thumbnail = await getChapterThumbnail(supabase, chapter.id.toString());
   return (
-    <Link href={`/chapters/${chapter.id}`}>
+    <Link href={`/chapters/${chapter.user_id}/${chapter.id}`}>
       <Card className="w-64 h-96 relative overflow-hidden z-0">
         <Image
           width={256}

@@ -64,3 +64,52 @@ export const getChapters = async (supabase: SupabaseClient<Database>) => {
   if (error) throw new Error(error.message);
   return data;
 };
+
+export const uploadAudio = async (
+  supabase: SupabaseClient<Database>,
+  chapterId: string,
+  fileBody: Blob
+) => {
+  const user = await getCurrentUser(supabase);
+  const fname = `${new Date().toISOString()}.mp3`;
+  const file = new File([fileBody], fname, { type: "audio/mpeg" });
+  console.log(file);
+
+  const { data, error } = await supabase.storage
+    .from("stories")
+    .upload(`${user.id}/${chapterId}/${fname}`, file, {
+      contentType: "audio/mpeg",
+    });
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const getAudioURLs = async (
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  chapterId: string
+) => {
+  const folderName = `${userId}/${chapterId}`;
+  const { data, error } = await supabase.storage
+    .from("stories")
+    .list(folderName);
+  if (error) throw new Error(error.message);
+  const urls: { time: Date; url: string }[] = [];
+
+  data.forEach((d) => {
+    if (d.name === "thumbnail") return;
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage
+      .from("stories")
+      .getPublicUrl(folderName + "/" + d.name);
+
+    urls.push({
+      time: new Date(d.name.replace(".mp3", "")),
+      url: publicUrl,
+    });
+  });
+
+  return urls;
+};

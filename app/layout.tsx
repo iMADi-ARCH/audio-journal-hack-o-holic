@@ -5,6 +5,7 @@ import LeftBar from "@/components/shared/left-bar";
 import { Inter } from "next/font/google";
 import RealtimeUpdates from "@/components/realtime-updates";
 import { RecordButton } from "@/components/specific/audio-recorder";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,8 +36,8 @@ export default function RootLayout({
           <main className="max-w-screen-2xl mx-auto min-h-screen w-full flex">
             <LeftBar />
             <div className="w-full">{children}</div>
-            <RecordButton />
           </main>
+          <Toaster />
         </Providers>
       </body>
     </html>
