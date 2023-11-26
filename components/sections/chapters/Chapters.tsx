@@ -24,7 +24,7 @@ const Chapters = (props: Props) => {
   });
   // const chapters = await getChapters(supabase);
   if (isError) {
-    return error;
+    return null;
   }
 
   return (

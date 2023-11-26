@@ -25,6 +25,7 @@
     "geist": "^1.0.0",
     "lucide-react": "^0.292.0",
     "next": "latest",
+    "next-themes": "^0.2.1",
     "postcss": "8.4.29",
     "react": "18.2.0",
     "react-audio-voice-recorder": "^2.2.0",
