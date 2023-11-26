@@ -27,7 +27,7 @@ const AudioList = ({ chapterId, ownerId }: Props) => {
   }
 
   return (
-    <div className="flex flex-col gap-4 px-10">
+    <div className="flex flex-col gap-4">
       {isLoading &&
         [...Array(5)].map((_) => <Skeleton key={_} className="w-96 h-24" />)}
       {data?.map((d) => (

@@ -19,13 +19,28 @@ export const createChapter = async (
     .select();
   if (error) throw new Error(error.message);
 
-  data[0].id;
-
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from("stories")
     .upload(`${user.id}/${data[0].id}/thumbnail`, file);
   if (uploadError) throw new Error(uploadError.message);
-  return redirect(`chapters/${data[0].id}`);
+  return data;
+};
+
+export const deleteChapter = async (
+  supabase: SupabaseClient<Database>,
+  chapterId: string
+) => {
+  const user = await getCurrentUser(supabase);
+  const { error } = await supabase
+    .from("chapters")
+    .delete()
+    .eq("id", chapterId);
+  if (error) throw new Error(error.message);
+
+  const { data: deleteData, error: deleteError } = await supabase.storage
+    .from("stories")
+    .remove([`${user.id}/${chapterId}`]);
+  if (deleteError) throw new Error(deleteError.message);
 };
 
 export const getChapterThumbnail = async (

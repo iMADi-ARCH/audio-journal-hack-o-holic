@@ -10,17 +10,44 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 import { createChapter } from "@/utils/actions/chapters";
 import useSupabase from "@/utils/hooks/useSupabase";
 import { PlusIcon } from "lucide-react";
-import React from "react";
+import { redirect } from "next/navigation";
+import React, { useState } from "react";
+import { useMutation } from "react-query";
 
 type Props = {};
 
 const CreateChapter = (props: Props) => {
   const supabase = useSupabase();
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+
+  const { mutate, isLoading } = useMutation({
+    mutationFn: ({ fdata }: { fdata: FormData }) =>
+      createChapter(supabase, fdata),
+    onError: (error) => {
+      console.log(error);
+
+      toast({
+        title: "Error creating chapter",
+        description: (error as Error).message,
+      });
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Successfully created chapter",
+        description: variables.fdata.get("title") as string,
+      });
+      setOpen(false);
+      redirect(`chapters/${data[0].id}`);
+    },
+  });
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button>
           <Card className="w-64 h-96 ">
@@ -37,7 +64,10 @@ const CreateChapter = (props: Props) => {
         </DialogHeader>
         <form
           className="flex flex-col gap-2"
-          action={(fdata) => createChapter(supabase, fdata)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutate({ fdata: new FormData(e.currentTarget) });
+          }}
         >
           <Label>Title</Label>
           <Input type="text" name="title" />
@@ -45,7 +75,7 @@ const CreateChapter = (props: Props) => {
           <Input type="text" name="desc" />
           <Label>Thumbnail</Label>
           <Input type="file" name="thumbnail" />
-          <Button>Save</Button>
+          <Button disabled={isLoading}>Save</Button>
         </form>
       </DialogContent>
     </Dialog>

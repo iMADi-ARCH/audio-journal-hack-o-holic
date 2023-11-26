@@ -9,6 +9,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import React from "react";
 import AudioList from "./AudioList";
+import DeleteChapterButton from "./DeleteChapterButton";
 
 type Props = { params?: { ownerId?: string; chapterId?: string } };
 
@@ -33,9 +34,13 @@ const ChapterPage = async ({ params }: Props) => {
         <p>
           Story of date {format(new Date(chapter.created_at), "dd/mm/yyyy")}
         </p>
+        <AudioList ownerId={params.ownerId} chapterId={params.chapterId} />
+        <DeleteChapterButton
+          chapterId={params.chapterId}
+          ownerId={params.ownerId}
+        />
       </div>
 
-      <AudioList ownerId={params.ownerId} chapterId={params.chapterId} />
       <RecordButton ownerId={params.ownerId} chapterId={params.chapterId} />
     </div>
   );
